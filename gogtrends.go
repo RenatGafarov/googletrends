@@ -1,4 +1,4 @@
-package gogtrends
+package googletrends
 
 import (
 	"context"
@@ -7,9 +7,6 @@ import (
 	"log"
 	"net/url"
 	"strings"
-
-	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
 )
 
 var client = newGClient()
@@ -189,10 +186,11 @@ func Explore(ctx context.Context, r *ExploreRequest, hl string) (ExploreResponse
 	p.Set(paramHl, hl)
 
 	// marshal request for query param
-	mReq, err := jsoniter.MarshalToString(r)
+	reqBytes, err := json.Marshal(r)
 	if err != nil {
-		return nil, errors.Wrapf(err, errInvalidRequest)
+		return nil, fmt.Errorf("%s: %w", errInvalidRequest, err)
 	}
+	mReq := string(reqBytes)
 
 	p.Set(paramReq, mReq)
 	u.RawQuery = p.Encode()
@@ -233,13 +231,12 @@ func InterestOverTime(ctx context.Context, w *ExploreWidget, hl string) ([]*Time
 		}
 	}
 
-	// marshal request for query param using encoding/json instead of jsoniter
-	// to avoid nil map panic issues (encoding/json handles nil maps gracefully)
-	bytes, err := json.Marshal(w.Request)
+	// marshal request for query param
+	reqBytes, err := json.Marshal(w.Request)
 	if err != nil {
-		return nil, errors.Wrapf(err, errInvalidRequest)
+		return nil, fmt.Errorf("%s: %w", errInvalidRequest, err)
 	}
-	mReq := string(bytes)
+	mReq := string(reqBytes)
 
 	p.Set(paramReq, mReq)
 	u.RawQuery = p.Encode()
@@ -278,12 +275,12 @@ func InterestByLocation(ctx context.Context, w *ExploreWidget, hl string) ([]*Ge
 	}
 
 	// marshal request for query param
-	mReq, err := jsoniter.MarshalToString(w.Request)
+	reqBytes, err := json.Marshal(w.Request)
 	if err != nil {
-		return nil, errors.Wrapf(err, errInvalidRequest)
+		return nil, fmt.Errorf("%s: %w", errInvalidRequest, err)
 	}
 
-	p.Set(paramReq, mReq)
+	p.Set(paramReq, string(reqBytes))
 	u.RawQuery = p.Encode()
 
 	b, err := client.do(ctx, u)
@@ -320,12 +317,12 @@ func Related(ctx context.Context, w *ExploreWidget, hl string) ([]*RankedKeyword
 	}
 
 	// marshal request for query param
-	mReq, err := jsoniter.MarshalToString(w.Request)
+	reqBytes, err := json.Marshal(w.Request)
 	if err != nil {
-		return nil, errors.Wrapf(err, errInvalidRequest)
+		return nil, fmt.Errorf("%s: %w", errInvalidRequest, err)
 	}
 
-	p.Set(paramReq, mReq)
+	p.Set(paramReq, string(reqBytes))
 	u.RawQuery = p.Encode()
 
 	b, err := client.do(ctx, u)

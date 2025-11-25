@@ -1,4 +1,4 @@
-package gogtrends
+package googletrends
 
 import (
 	"context"
@@ -28,6 +28,10 @@ func TestDebug(t *testing.T) {
 }
 
 func TestDailyTrending(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	_, err := Daily(context.Background(), "unknown", "Kashyyyk")
 	assert.Error(t, err)
 
@@ -37,6 +41,10 @@ func TestDailyTrending(t *testing.T) {
 }
 
 func TestDailyTrendingSearch(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	_, err := DailyTrendingSearch(context.Background(), "unknown", "Kashyyyk")
 	assert.Error(t, err)
 
@@ -46,6 +54,10 @@ func TestDailyTrendingSearch(t *testing.T) {
 }
 
 func TestRealtimeTrending(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	categories := TrendsCategories()
 	assert.True(t, len(categories) > 0)
 	_, ok := categories[catAll]
@@ -60,6 +72,10 @@ func TestRealtimeTrending(t *testing.T) {
 }
 
 func TestRealtimeTrendingConcurrent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrentGoroutinesNum)
 	for i := 0; i < concurrentGoroutinesNum; i++ {
@@ -80,6 +96,10 @@ func TestRealtimeTrendingConcurrent(t *testing.T) {
 }
 
 func TestExploreCategories(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrentGoroutinesNum)
 	for i := 0; i < concurrentGoroutinesNum; i++ {
@@ -94,6 +114,10 @@ func TestExploreCategories(t *testing.T) {
 }
 
 func TestExploreLocations(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrentGoroutinesNum)
 	for i := 0; i < concurrentGoroutinesNum; i++ {
@@ -108,6 +132,10 @@ func TestExploreLocations(t *testing.T) {
 }
 
 func TestExplore(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -124,6 +152,10 @@ func TestExplore(t *testing.T) {
 }
 
 func TestInterestOverTime(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -148,6 +180,10 @@ func TestInterestOverTime(t *testing.T) {
 }
 
 func TestInterestByLocation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -172,6 +208,10 @@ func TestInterestByLocation(t *testing.T) {
 }
 
 func TestInterestByLocationConcurrent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 
 	wg.Add(concurrentGoroutinesNum)
@@ -204,6 +244,10 @@ func TestInterestByLocationConcurrent(t *testing.T) {
 }
 
 func TestRelated(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -232,6 +276,10 @@ func TestRelated(t *testing.T) {
 }
 
 func TestLoadDaily(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	res := make([][]*TrendingSearch, loadTestNum)
 	errors := make([]error, loadTestNum)
 	for i := 0; i < loadTestNum; i++ {
@@ -248,6 +296,10 @@ func TestLoadDaily(t *testing.T) {
 }
 
 func TestLoadRealtime(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	res := make([][]*TrendingStory, loadTestNum)
 	errors := make([]error, loadTestNum)
 	for i := 0; i < loadTestNum; i++ {
@@ -264,6 +316,10 @@ func TestLoadRealtime(t *testing.T) {
 }
 
 func TestLoadOverTime(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -295,6 +351,10 @@ func TestLoadOverTime(t *testing.T) {
 }
 
 func TestLoadByLocation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -326,6 +386,10 @@ func TestLoadByLocation(t *testing.T) {
 }
 
 func TestCompareInterest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -367,6 +431,10 @@ func TestCompareInterest(t *testing.T) {
 }
 
 func TestCompareInterestConcurrent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrentGoroutinesNum)
 	for i := 0; i < concurrentGoroutinesNum; i++ {
@@ -417,6 +485,10 @@ func TestCompareInterestConcurrent(t *testing.T) {
 }
 
 func TestMultipleComparisonItems(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -476,6 +548,10 @@ func TestMultipleComparisonItems(t *testing.T) {
 }
 
 func TestExploreSort(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -524,6 +600,10 @@ func TestExploreSort(t *testing.T) {
 }
 
 func TestExploreGetWidgetsByOrder(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -565,6 +645,10 @@ func TestExploreGetWidgetsByOrder(t *testing.T) {
 }
 
 func TestExploreGetWidgetsByType(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	req := &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{
 			{
@@ -598,6 +682,10 @@ func TestExploreGetWidgetsByType(t *testing.T) {
 }
 
 func TestAutocomplete(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	explore, err := Search(context.Background(), "Golang", langEN)
 	assert.NoError(t, err)
 
@@ -614,6 +702,10 @@ func TestAutocomplete(t *testing.T) {
 }
 
 func TestComparisonItemWithStartAndEndTime(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	ctx := context.Background()
 	explore, err := Explore(ctx, &ExploreRequest{
 		ComparisonItems: []*ComparisonItem{

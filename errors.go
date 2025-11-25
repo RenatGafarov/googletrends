@@ -1,6 +1,6 @@
-package gogtrends
+package googletrends
 
-import "github.com/pkg/errors"
+import "errors"
 
 const (
 	errParsing        = "failed to parse json"
