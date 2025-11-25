@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 )
@@ -16,103 +15,14 @@ func Debug(debug bool) {
 	client.debug = debug
 }
 
-// TrendsCategories return list of available categories for Realtime method as [param]description map.
-func TrendsCategories() map[string]string {
-	return client.trendsCats
-}
 
 // Daily gets daily trends descending ordered by days and articles corresponding to it.
-// Deprecated: This function uses the old Google Trends API which may be unstable.
-// Use DailyNew instead, which uses the new Google Trends API.
+// This is an alias for DailyNew which uses the new Google Trends API.
 func Daily(ctx context.Context, hl, loc string) ([]*TrendingSearch, error) {
-	// Try the new API first
-	terms, err := client.trendsNew(ctx, hl, loc)
-	if err == nil && len(terms) > 0 {
-		// Convert string terms to TrendingSearch objects
-		searches := make([]*TrendingSearch, 0, len(terms))
-		for _, term := range terms {
-			searches = append(searches, &TrendingSearch{
-				Title: &SearchTitle{
-					Query: term,
-				},
-				FormattedTraffic: "",
-				Image:            nil,
-				Articles:         []*SearchArticle{},
-			})
-		}
-		return searches, nil
-	}
-
-	// Fall back to the old API if the new one fails
-	if client.debug {
-		log.Println("[Debug] New API failed, falling back to old API:", err)
-	}
-
-	data, err := client.trends(ctx, gAPI+gDaily, hl, loc)
-	if err != nil {
-		return nil, err
-	}
-
-	// google api returns not valid json :(
-	str := strings.Replace(data, ")]}',", "", 1)
-
-	out := new(dailyOut)
-	if err := client.unmarshal(str, out); err != nil {
-		return nil, err
-	}
-
-	// split searches by days together
-	searches := make([]*TrendingSearch, 0)
-	for _, v := range out.Default.Searches {
-		searches = append(searches, v.Searches...)
-	}
-
-	return searches, nil
+	return DailyNew(ctx, hl, loc)
 }
 
-// DailyTrendingSearch gets daily trends descending ordered by days and articles corresponding to it.
-// Deprecated: This function uses the old Google Trends API which may be unstable.
-// Use DailyTrendingSearchNew instead, which uses the new Google Trends API.
-func DailyTrendingSearch(ctx context.Context, hl, loc string) ([]*TrendingSearchDays, error) {
-	data, err := client.trends(ctx, gAPI+gDaily, hl, loc)
-	if err != nil {
-		return nil, err
-	}
 
-	// google api returns not valid json :(
-	str := strings.Replace(data, ")]}',", "", 1)
-
-	out := new(dailyOut)
-	if err := client.unmarshal(str, out); err != nil {
-		return nil, err
-	}
-
-	return out.Default.Searches, nil
-}
-
-// Realtime represents realtime trends with included articles and sources.
-// Deprecated: This function uses the old Google Trends API which may be unstable.
-// Consider using the new API methods for more reliable results.
-func Realtime(ctx context.Context, hl, loc, cat string) ([]*TrendingStory, error) {
-	if !client.validateCategory(cat) {
-		return nil, ErrInvalidCategory
-	}
-
-	data, err := client.trends(ctx, gAPI+gRealtime, hl, loc, map[string]string{paramCat: cat})
-	if err != nil {
-		return nil, err
-	}
-
-	// google api returns not valid json :(
-	str := strings.Replace(data, ")]}'", "", 1)
-
-	out := new(realtimeOut)
-	if err := client.unmarshal(str, out); err != nil {
-		return nil, err
-	}
-
-	return out.StorySummaries.TrendingStories, nil
-}
 
 // ExploreCategories gets available categories for explore and comparison and caches it in client.
 // Deprecated: This function uses the old Google Trends API which may be unstable.
@@ -379,18 +289,12 @@ func Search(ctx context.Context, word, hl string) ([]*KeywordTopic, error) {
 }
 
 // DailyNew gets daily trends using the new Google Trends API.
-// It has the same parameters and return type as the original Daily method.
 func DailyNew(ctx context.Context, hl, loc string) ([]*TrendingSearch, error) {
-	// Use the new API
 	terms, err := client.trendsNew(ctx, hl, loc)
 	if err != nil {
-		if client.debug {
-			log.Println("[Debug] New API failed:", err)
-		}
 		return nil, err
 	}
 
-	// Convert string terms to TrendingSearch objects
 	searches := make([]*TrendingSearch, 0, len(terms))
 	for _, term := range terms {
 		searches = append(searches, &TrendingSearch{
@@ -407,18 +311,12 @@ func DailyNew(ctx context.Context, hl, loc string) ([]*TrendingSearch, error) {
 }
 
 // DailyTrendingSearchNew gets daily trends ordered by days using the new Google Trends API.
-// It has the same parameters and return type as the original DailyTrendingSearch method.
 func DailyTrendingSearchNew(ctx context.Context, hl, loc string) ([]*TrendingSearchDays, error) {
-	// Use the new API
 	terms, err := client.trendsNew(ctx, hl, loc)
 	if err != nil {
-		if client.debug {
-			log.Println("[Debug] New API failed:", err)
-		}
 		return nil, err
 	}
 
-	// Create a single day with all trending searches
 	today := &TrendingSearchDays{
 		FormattedDate: "Today",
 		Searches:      make([]*TrendingSearch, 0, len(terms)),

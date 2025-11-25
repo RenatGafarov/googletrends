@@ -11,8 +11,6 @@ const (
 )
 
 var (
-	// ErrInvalidCategory - user input is not in trendsCategories list (binding to available options in Google Trends)
-	ErrInvalidCategory = errors.New("invalid category param")
 	// ErrRequestFailed - response status != 200
 	ErrRequestFailed = errors.New("failed to perform http request")
 	// ErrInvalidWidgetType - provided widget is invalid or is used for another method

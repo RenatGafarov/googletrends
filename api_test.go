@@ -6,22 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTrendsCategories(t *testing.T) {
-	t.Parallel()
-
-	categories := TrendsCategories()
-
-	assert.NotNil(t, categories)
-	assert.Greater(t, len(categories), 0)
-
-	// Verify expected categories exist
-	expectedCategories := []string{"all", "b", "h", "m", "t", "e", "s"}
-	for _, cat := range expectedCategories {
-		_, exists := categories[cat]
-		assert.True(t, exists, "Expected category %s to exist", cat)
-	}
-}
-
 func TestExploreResponseSort(t *testing.T) {
 	t.Parallel()
 
@@ -127,11 +111,9 @@ func TestWidgetTypes(t *testing.T) {
 func TestErrorVariables(t *testing.T) {
 	t.Parallel()
 
-	assert.NotNil(t, ErrInvalidCategory)
 	assert.NotNil(t, ErrRequestFailed)
 	assert.NotNil(t, ErrInvalidWidgetType)
 
-	assert.Equal(t, "invalid category param", ErrInvalidCategory.Error())
 	assert.Equal(t, "failed to perform http request", ErrRequestFailed.Error())
 	assert.Equal(t, "invalid widget type", ErrInvalidWidgetType.Error())
 }

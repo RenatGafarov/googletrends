@@ -13,7 +13,6 @@ import (
 
 const (
 	locUS  = "US"
-	catAll = "all"
 	langEN = "EN"
 
 	concurrentGoroutinesNum = 10
@@ -40,60 +39,7 @@ func TestDailyTrending(t *testing.T) {
 	assert.True(t, len(resp[0].Title.Query) > 0)
 }
 
-func TestDailyTrendingSearch(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
 
-	_, err := DailyTrendingSearch(context.Background(), "unknown", "Kashyyyk")
-	assert.Error(t, err)
-
-	resp, err := DailyTrendingSearch(context.Background(), langEN, locUS)
-	assert.NoError(t, err)
-	assert.True(t, len(resp) > 0)
-}
-
-func TestRealtimeTrending(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
-
-	categories := TrendsCategories()
-	assert.True(t, len(categories) > 0)
-	_, ok := categories[catAll]
-	assert.True(t, ok)
-
-	_, err := Realtime(context.Background(), langEN, locUS, "random")
-	assert.Error(t, err)
-
-	resp, err := Realtime(context.Background(), langEN, locUS, catAll)
-	assert.NoError(t, err)
-	assert.True(t, len(resp[0].Title) > 0)
-}
-
-func TestRealtimeTrendingConcurrent(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
-
-	wg := new(sync.WaitGroup)
-	wg.Add(concurrentGoroutinesNum)
-	for i := 0; i < concurrentGoroutinesNum; i++ {
-		go func() {
-			defer wg.Done()
-
-			categories := TrendsCategories()
-			assert.True(t, len(categories) > 0)
-			_, ok := categories[catAll]
-			assert.True(t, ok)
-
-			resp, err := Realtime(context.Background(), langEN, locUS, catAll)
-			assert.NoError(t, err)
-			assert.True(t, len(resp[0].Title) > 0)
-		}()
-	}
-	wg.Wait()
-}
 
 func TestExploreCategories(t *testing.T) {
 	if testing.Short() {
@@ -295,25 +241,6 @@ func TestLoadDaily(t *testing.T) {
 	}
 }
 
-func TestLoadRealtime(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
-
-	res := make([][]*TrendingStory, loadTestNum)
-	errors := make([]error, loadTestNum)
-	for i := 0; i < loadTestNum; i++ {
-		res[i], errors[i] = Realtime(context.Background(), langEN, locUS, catAll)
-	}
-
-	for _, e := range errors {
-		assert.NoError(t, e)
-	}
-
-	for _, r := range res {
-		assert.True(t, len(r[0].Title) > 0)
-	}
-}
 
 func TestLoadOverTime(t *testing.T) {
 	if testing.Short() {

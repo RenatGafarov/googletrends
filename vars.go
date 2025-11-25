@@ -9,9 +9,6 @@ import (
 const (
 	gAPI = "https://trends.google.com/trends/api"
 
-	gDaily    = "/dailytrends"
-	gRealtime = "/realtimetrends"
-
 	gSExplore      = "/explore"
 	gSCategories   = "/explore/pickers/category"
 	gSGeo          = "/explore/pickers/geo"
@@ -42,33 +39,14 @@ const (
 	RelatedTopicsID     WidgetType = "RELATED_TOPICS"
 )
 
-var (
-	defaultParams = map[string]string{
-		paramTZ:  "0",
-		paramCat: "all",
-		"fi":     "0",
-		"fs":     "0",
-		paramHl:  "EN",
-		"ri":     "300",
-		"rs":     "20",
-	}
-	trendsCategories = map[string]string{
-		"all": "all",
-		"b":   "business",
-		"h":   "main news",
-		"m":   "health",
-		"t":   "science and technics",
-		"e":   "entertainment",
-		"s":   "sport",
-	}
-)
-
-type dailyOut struct {
-	Default *trendingSearchesDays `json:"default" bson:"default"`
-}
-
-type trendingSearchesDays struct {
-	Searches []*TrendingSearchDays `json:"trendingSearchesDays" bson:"trending_search_days"`
+var defaultParams = map[string]string{
+	paramTZ:  "0",
+	paramCat: "all",
+	"fi":     "0",
+	"fs":     "0",
+	paramHl:  "EN",
+	"ri":     "300",
+	"rs":     "20",
 }
 
 type TrendingSearchDays struct {
@@ -106,29 +84,6 @@ type SearchArticle struct {
 	Snippet string       `json:"snippet" bson:"snippet"`
 }
 
-type realtimeOut struct {
-	StorySummaries *storySummary `json:"storySummaries" bson:"story_summaries"`
-}
-
-type storySummary struct {
-	TrendingStories []*TrendingStory `json:"trendingStories" bson:"trending_stories"`
-}
-
-// TrendingStory is a representation of realtime trend
-type TrendingStory struct {
-	Title    string             `json:"title" bson:"title"`
-	Image    *SearchImage       `json:"image" bson:"image"`
-	Articles []*TrendingArticle `json:"articles" bson:"articles"`
-}
-
-// TrendingArticle is an article relative to trending story
-type TrendingArticle struct {
-	Title   string `json:"articleTitle" bson:"title"`
-	URL     string `json:"url" bson:"url"`
-	Source  string `json:"source" bson:"source"`
-	Time    string `json:"time" bson:"time"`
-	Snippet string `json:"snippet" bson:"snippet"`
-}
 
 // ExploreRequest it's an input which can contain multiple items (keywords) to discover
 // category can be found in ExploreCategories output

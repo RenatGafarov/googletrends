@@ -40,7 +40,6 @@ func TestNewGClient(t *testing.T) {
 		assert.NotNil(t, c)
 		assert.NotNil(t, c.httpClient)
 		assert.NotNil(t, c.defParams)
-		assert.NotNil(t, c.tcm)
 		assert.NotNil(t, c.cm)
 		assert.NotNil(t, c.lm)
 	})
@@ -192,23 +191,6 @@ func TestGClientUnmarshal(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), errParsing)
-	})
-}
-
-func TestGClientValidateCategory(t *testing.T) {
-	t.Parallel()
-
-	c := newGClient()
-
-	t.Run("valid category", func(t *testing.T) {
-		assert.True(t, c.validateCategory("all"))
-		assert.True(t, c.validateCategory("b"))
-		assert.True(t, c.validateCategory("h"))
-	})
-
-	t.Run("invalid category", func(t *testing.T) {
-		assert.False(t, c.validateCategory("invalid"))
-		assert.False(t, c.validateCategory(""))
 	})
 }
 

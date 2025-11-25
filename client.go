@@ -33,9 +33,6 @@ type gClient struct {
 	httpClient HTTPDoer
 	defParams  url.Values
 
-	tcm        *sync.RWMutex
-	trendsCats map[string]string
-
 	cm          *sync.RWMutex
 	exploreCats *ExploreCatTree
 
@@ -66,8 +63,6 @@ func newGClient(opts ...Option) *gClient {
 	c := &gClient{
 		httpClient: http.DefaultClient,
 		defParams:  p,
-		tcm:        new(sync.RWMutex),
-		trendsCats: trendsCategories,
 		cm:         new(sync.RWMutex),
 		lm:         new(sync.RWMutex),
 	}
@@ -285,41 +280,6 @@ func (c *gClient) extractJSONFromResponse(text string) ([]string, error) {
 	}
 
 	return nil, errors.New("no valid JSON found in response")
-}
-
-func (c *gClient) trends(ctx context.Context, path, hl, loc string, args ...map[string]string) (string, error) {
-	u, _ := url.Parse(path)
-
-	// required params
-	p := c.defaultParams()
-	if len(loc) > 0 {
-		p.Set(paramGeo, loc)
-	}
-	p.Set(paramHl, hl)
-
-	// additional params
-	for _, arg := range args {
-		for n, v := range arg {
-			p.Set(n, v)
-		}
-	}
-
-	u.RawQuery = p.Encode()
-
-	data, err := c.do(ctx, u)
-	if err != nil {
-		return "", err
-	}
-
-	return string(data), nil
-}
-
-func (c *gClient) validateCategory(cat string) bool {
-	c.tcm.RLock()
-	_, ok := c.trendsCats[cat]
-	c.tcm.RUnlock()
-
-	return ok
 }
 
 // trendsNew uses the new Google Trends API to fetch trending searches
