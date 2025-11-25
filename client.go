@@ -1,19 +1,16 @@
-package gogtrends
+package googletrends
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
-
-	jsoniter "github.com/json-iterator/go"
-
-	"log"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -25,9 +22,16 @@ const (
 	contentTypeForm      = "application/x-www-form-urlencoded;charset=UTF-8"
 )
 
+// HTTPDoer is an interface for making HTTP requests.
+// It allows for dependency injection and easier testing.
+type HTTPDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// gClient is the internal client for Google Trends API.
 type gClient struct {
-	c         *http.Client
-	defParams url.Values
+	httpClient HTTPDoer
+	defParams  url.Values
 
 	tcm        *sync.RWMutex
 	trendsCats map[string]string
@@ -42,21 +46,37 @@ type gClient struct {
 	debug  bool
 }
 
-func newGClient() *gClient {
-	// default request params
+// Option is a function that configures the client.
+type Option func(*gClient)
+
+// WithHTTPClient sets a custom HTTP client.
+func WithHTTPClient(httpClient HTTPDoer) Option {
+	return func(c *gClient) {
+		c.httpClient = httpClient
+	}
+}
+
+// newGClient creates a new Google Trends client with default settings.
+func newGClient(opts ...Option) *gClient {
 	p := make(url.Values)
 	for k, v := range defaultParams {
 		p.Add(k, v)
 	}
 
-	return &gClient{
-		c:          http.DefaultClient,
+	c := &gClient{
+		httpClient: http.DefaultClient,
 		defParams:  p,
 		tcm:        new(sync.RWMutex),
 		trendsCats: trendsCategories,
 		cm:         new(sync.RWMutex),
 		lm:         new(sync.RWMutex),
 	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
 }
 
 func (c *gClient) defaultParams() url.Values {
@@ -96,36 +116,36 @@ func (c *gClient) setLocations(locs *ExploreLocTree) {
 func (c *gClient) do(ctx context.Context, u *url.URL) ([]byte, error) {
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, errCreateRequest)
+		return nil, fmt.Errorf("%s: %w", errCreateRequest, err)
 	}
 
 	r.Header.Add(headerKeyAccept, contentTypeJSON)
 
-	if len(client.cookie) != 0 {
-		r.Header.Add(headerKeyCookie, client.cookie)
+	if len(c.cookie) != 0 {
+		r.Header.Add(headerKeyCookie, c.cookie)
 	}
 
-	if client.debug {
+	if c.debug {
 		log.Println("[Debug] Request with params: ", r.URL)
 	}
 
-	resp, err := c.c.Do(r)
+	resp, err := c.httpClient.Do(r)
 	if err != nil {
-		return nil, errors.Wrap(err, errDoRequest)
+		return nil, fmt.Errorf("%s: %w", errDoRequest, err)
 	}
 	defer resp.Body.Close()
 
-	if client.debug {
+	if c.debug {
 		log.Println("[Debug] Response: ", resp)
 	}
 
 	if resp.StatusCode == http.StatusTooManyRequests {
 		cookie := strings.Split(resp.Header.Get(headerKeySetCookie), ";")
 		if len(cookie) > 0 {
-			client.cookie = cookie[0]
+			c.cookie = cookie[0]
 			r.Header.Set(headerKeyCookie, cookie[0])
 
-			resp, err = c.c.Do(r)
+			resp, err = c.httpClient.Do(r)
 			if err != nil {
 				return nil, err
 			}
@@ -134,47 +154,47 @@ func (c *gClient) do(ctx context.Context, u *url.URL) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Wrapf(ErrRequestFailed, errReqDataF, resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("%w: "+errReqDataF, ErrRequestFailed, resp.StatusCode, resp.Status)
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 // doPost performs a POST request to the specified URL with the given payload
 func (c *gClient) doPost(ctx context.Context, u *url.URL, payload string) ([]byte, error) {
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), strings.NewReader(payload))
 	if err != nil {
-		return nil, errors.Wrap(err, errCreateRequest)
+		return nil, fmt.Errorf("%s: %w", errCreateRequest, err)
 	}
 
 	r.Header.Add(headerKeyContentType, contentTypeForm)
 
-	if len(client.cookie) != 0 {
-		r.Header.Add(headerKeyCookie, client.cookie)
+	if len(c.cookie) != 0 {
+		r.Header.Add(headerKeyCookie, c.cookie)
 	}
 
-	if client.debug {
+	if c.debug {
 		log.Println("[Debug] POST Request with params: ", r.URL)
 		log.Println("[Debug] POST Request payload: ", payload)
 	}
 
-	resp, err := c.c.Do(r)
+	resp, err := c.httpClient.Do(r)
 	if err != nil {
-		return nil, errors.Wrap(err, errDoRequest)
+		return nil, fmt.Errorf("%s: %w", errDoRequest, err)
 	}
 	defer resp.Body.Close()
 
-	if client.debug {
+	if c.debug {
 		log.Println("[Debug] Response: ", resp)
 	}
 
 	if resp.StatusCode == http.StatusTooManyRequests {
 		cookie := strings.Split(resp.Header.Get(headerKeySetCookie), ";")
 		if len(cookie) > 0 {
-			client.cookie = cookie[0]
+			c.cookie = cookie[0]
 			r.Header.Set(headerKeyCookie, cookie[0])
 
-			resp, err = c.c.Do(r)
+			resp, err = c.httpClient.Do(r)
 			if err != nil {
 				return nil, err
 			}
@@ -183,15 +203,15 @@ func (c *gClient) doPost(ctx context.Context, u *url.URL, payload string) ([]byt
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Wrapf(ErrRequestFailed, errReqDataF, resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("%w: "+errReqDataF, ErrRequestFailed, resp.StatusCode, resp.Status)
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 func (c *gClient) unmarshal(str string, dest interface{}) error {
-	if err := jsoniter.UnmarshalFromString(str, dest); err != nil {
-		return errors.Wrap(err, errParsing)
+	if err := json.Unmarshal([]byte(str), dest); err != nil {
+		return fmt.Errorf("%s: %w", errParsing, err)
 	}
 
 	return nil
@@ -199,7 +219,7 @@ func (c *gClient) unmarshal(str string, dest interface{}) error {
 
 // extractJSONFromResponse extracts the nested JSON object from the API response
 func (c *gClient) extractJSONFromResponse(text string) ([]string, error) {
-	if client.debug {
+	if c.debug {
 		log.Println("[Debug] Extracting JSON from API response")
 	}
 
@@ -208,13 +228,13 @@ func (c *gClient) extractJSONFromResponse(text string) ([]string, error) {
 	for _, line := range strings.Split(text, "\n") {
 		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
-			try := func() error {
+			parseErr := func() error {
 				var intermediate []interface{}
-				if err := jsoniter.UnmarshalFromString(trimmed, &intermediate); err != nil {
+				if err := json.Unmarshal([]byte(trimmed), &intermediate); err != nil {
 					return err
 				}
 
-				if len(intermediate) > 0 && len(intermediate) > 2 {
+				if len(intermediate) > 2 {
 					secondItem, ok := intermediate[0].([]interface{})
 					if !ok || len(secondItem) < 3 {
 						return errors.New("invalid intermediate format")
@@ -226,7 +246,7 @@ func (c *gClient) extractJSONFromResponse(text string) ([]string, error) {
 					}
 
 					var data []interface{}
-					if err := jsoniter.UnmarshalFromString(jsonStr, &data); err != nil {
+					if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
 						return err
 					}
 
@@ -246,17 +266,17 @@ func (c *gClient) extractJSONFromResponse(text string) ([]string, error) {
 					}
 				}
 				return nil
-			}
+			}()
 
-			if err := try(); err != nil {
-				if client.debug {
-					log.Println("[Debug] Error parsing JSON:", err)
+			if parseErr != nil {
+				if c.debug {
+					log.Println("[Debug] Error parsing JSON:", parseErr)
 				}
 				continue
 			}
 
 			if len(result) > 0 {
-				if client.debug {
+				if c.debug {
 					log.Println("[Debug] JSON extraction successful")
 				}
 				return result, nil
@@ -271,24 +291,22 @@ func (c *gClient) trends(ctx context.Context, path, hl, loc string, args ...map[
 	u, _ := url.Parse(path)
 
 	// required params
-	p := client.defaultParams()
+	p := c.defaultParams()
 	if len(loc) > 0 {
 		p.Set(paramGeo, loc)
 	}
 	p.Set(paramHl, hl)
 
 	// additional params
-	if len(args) > 0 {
-		for _, arg := range args {
-			for n, v := range arg {
-				p.Set(n, v)
-			}
+	for _, arg := range args {
+		for n, v := range arg {
+			p.Set(n, v)
 		}
 	}
 
 	u.RawQuery = p.Encode()
 
-	data, err := client.do(ctx, u)
+	data, err := c.do(ctx, u)
 	if err != nil {
 		return "", err
 	}
@@ -298,7 +316,7 @@ func (c *gClient) trends(ctx context.Context, path, hl, loc string, args ...map[
 
 func (c *gClient) validateCategory(cat string) bool {
 	c.tcm.RLock()
-	_, ok := client.trendsCats[cat]
+	_, ok := c.trendsCats[cat]
 	c.tcm.RUnlock()
 
 	return ok
@@ -311,14 +329,14 @@ func (c *gClient) trendsNew(ctx context.Context, hl, loc string) ([]string, erro
 	// Create payload for the new API
 	payload := fmt.Sprintf("f.req=[[[i0OFE,\"[null, null, \\\"%s\\\", 0, null, 48]\"]]]", loc)
 
-	if client.debug {
+	if c.debug {
 		log.Println("[Debug] Using new Google Trends API with payload:", payload)
 	}
 
-	data, err := client.doPost(ctx, u, payload)
+	data, err := c.doPost(ctx, u, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	return client.extractJSONFromResponse(string(data))
+	return c.extractJSONFromResponse(string(data))
 }
