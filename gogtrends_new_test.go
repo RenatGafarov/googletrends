@@ -1,4 +1,4 @@
-package gogtrends
+package googletrends
 
 import (
 	"context"
@@ -9,6 +9,10 @@ import (
 )
 
 func TestDailyNew(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	// Test with invalid location
 	_, err := DailyNew(context.Background(), "unknown", "Kashyyyk")
 	assert.Error(t, err)
@@ -26,6 +30,10 @@ func TestDailyNew(t *testing.T) {
 }
 
 func TestDailyTrendingSearchNew(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	// Test with invalid location
 	_, err := DailyTrendingSearchNew(context.Background(), "unknown", "Kashyyyk")
 	assert.Error(t, err)
@@ -47,6 +55,10 @@ func TestDailyTrendingSearchNew(t *testing.T) {
 }
 
 func TestDailyNewConcurrent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrentGoroutinesNum)
 
@@ -70,6 +82,10 @@ func TestDailyNewConcurrent(t *testing.T) {
 }
 
 func TestDailyTrendingSearchNewConcurrent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrentGoroutinesNum)
 
@@ -97,6 +113,10 @@ func TestDailyTrendingSearchNewConcurrent(t *testing.T) {
 }
 
 func TestLoadDailyNew(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	res := make([][]*TrendingSearch, loadTestNum)
 	errors := make([]error, loadTestNum)
 
@@ -115,6 +135,10 @@ func TestLoadDailyNew(t *testing.T) {
 }
 
 func TestLoadDailyTrendingSearchNew(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
 	res := make([][]*TrendingSearchDays, loadTestNum)
 	errors := make([]error, loadTestNum)
 

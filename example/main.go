@@ -2,13 +2,11 @@ package main
 
 import (
 	"context"
+	"log"
 	"reflect"
 	"sync"
 
-	"log"
-
-	"github.com/groovili/gogtrends"
-	"github.com/pkg/errors"
+	"github.com/renatgafarov/googletrends"
 )
 
 const (
@@ -21,22 +19,22 @@ var sg = new(sync.WaitGroup)
 
 func main() {
 	//Enable debug to see request-response
-	//gogtrends.Debug(true)
+	//googletrends.Debug(true)
 
 	ctx := context.Background()
 
 	log.Println("Daily trending searches:")
-	dailySearches, err := gogtrends.Daily(ctx, langEn, locUS)
+	dailySearches, err := googletrends.Daily(ctx, langEn, locUS)
 	handleError(err, "Failed to get daily searches")
 	printItems(dailySearches)
 
 	log.Println("Realtime trends:")
-	realtime, err := gogtrends.Realtime(ctx, langEn, locUS, catAll)
+	realtime, err := googletrends.Realtime(ctx, langEn, locUS, catAll)
 	handleError(err, "Failed to get realtime trends")
 	printItems(realtime)
 
 	log.Println("Available explore categories:")
-	cats, err := gogtrends.ExploreCategories(ctx)
+	cats, err := googletrends.ExploreCategories(ctx)
 	handleError(err, "Failed to explore categories")
 
 	// recursive print of categories tree
@@ -51,7 +49,7 @@ func main() {
 	log.Println("Explore Search:")
 	keyword := "Go"
 
-	keywords, err := gogtrends.Search(ctx, keyword, langEn)
+	keywords, err := googletrends.Search(ctx, keyword, langEn)
 	for _, v := range keywords {
 		log.Println(v)
 		if v.Type == "Language" {
@@ -62,8 +60,8 @@ func main() {
 
 	log.Println("Explore trends:")
 	// get widgets for Golang keyword in programming category
-	explore, err := gogtrends.Explore(ctx, &gogtrends.ExploreRequest{
-		ComparisonItems: []*gogtrends.ComparisonItem{
+	explore, err := googletrends.Explore(ctx, &googletrends.ExploreRequest{
+		ComparisonItems: []*googletrends.ComparisonItem{
 			{
 				Keyword: keyword,
 				Geo:     locUS,
@@ -77,29 +75,29 @@ func main() {
 	printItems(explore)
 
 	log.Println("Interest over time:")
-	overTime, err := gogtrends.InterestOverTime(ctx, explore[0], langEn)
+	overTime, err := googletrends.InterestOverTime(ctx, explore[0], langEn)
 	handleError(err, "Failed in call interest over time")
 	printItems(overTime)
 
 	log.Println("Interest by location:")
-	overReg, err := gogtrends.InterestByLocation(ctx, explore[1], langEn)
+	overReg, err := googletrends.InterestByLocation(ctx, explore[1], langEn)
 	handleError(err, "Failed in call interest by location")
 	printItems(overReg)
 
 	log.Println("Related topics:")
-	relT, err := gogtrends.Related(ctx, explore[2], langEn)
+	relT, err := googletrends.Related(ctx, explore[2], langEn)
 	handleError(err, "Failed to get related topics")
 	printItems(relT)
 
 	log.Println("Related queries:")
-	relQ, err := gogtrends.Related(ctx, explore[3], langEn)
+	relQ, err := googletrends.Related(ctx, explore[3], langEn)
 	handleError(err, "Failed to get related queries")
 	printItems(relQ)
 
 	log.Println("Compare keywords:")
 	// compare few keywords popularity
-	compare, err := gogtrends.Explore(ctx, &gogtrends.ExploreRequest{
-		ComparisonItems: []*gogtrends.ComparisonItem{
+	compare, err := googletrends.Explore(ctx, &googletrends.ExploreRequest{
+		ComparisonItems: []*googletrends.ComparisonItem{
 			{
 				Keyword: "Go",
 				Geo:     locUS,
@@ -125,7 +123,7 @@ func main() {
 
 func handleError(err error, errMsg string) {
 	if err != nil {
-		log.Fatal(errors.Wrap(err, errMsg))
+		log.Fatalf("%s: %v", errMsg, err)
 	}
 }
 
@@ -141,7 +139,7 @@ func printItems(items interface{}) {
 	}
 }
 
-func printNestedItems(cats []*gogtrends.ExploreCatTree) {
+func printNestedItems(cats []*googletrends.ExploreCatTree) {
 	defer sg.Done()
 	for _, v := range cats {
 		log.Println(v.Name, v.ID)
