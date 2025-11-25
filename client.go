@@ -133,7 +133,7 @@ func (c *gClient) do(ctx context.Context, u *url.URL) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", errDoRequest, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if c.debug {
 		log.Println("[Debug] Response: ", resp)
@@ -149,7 +149,7 @@ func (c *gClient) do(ctx context.Context, u *url.URL) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 		}
 	}
 
@@ -182,7 +182,7 @@ func (c *gClient) doPost(ctx context.Context, u *url.URL, payload string) ([]byt
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", errDoRequest, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if c.debug {
 		log.Println("[Debug] Response: ", resp)
@@ -198,7 +198,7 @@ func (c *gClient) doPost(ctx context.Context, u *url.URL, payload string) ([]byt
 			if err != nil {
 				return nil, err
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 		}
 	}
 
