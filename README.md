@@ -1,169 +1,149 @@
 # Google Trends API for Go
 
-###### Unofficial Google Trends API for Golang
+Unofficial Google Trends API for Go.
 
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go) [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/groovili/gogtrends) [![Coverage Status](https://coveralls.io/repos/github/groovili/gogtrends/badge.svg?branch=master)](https://coveralls.io/github/groovili/gogtrends?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/groovili/gogtrends)](https://goreportcard.com/report/github.com/groovili/gogtrends) [![License](https://img.shields.io/badge/licence-MIT-blue.svg)](https://github.com/groovili/gogtrends/blob/master/LICENSE)
+[![Go Reference](https://pkg.go.dev/badge/github.com/renatgafarov/googletrends.svg)](https://pkg.go.dev/github.com/renatgafarov/googletrends)
+[![Go Report Card](https://goreportcard.com/badge/github.com/renatgafarov/googletrends)](https://goreportcard.com/report/github.com/renatgafarov/googletrends)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**gogtrends** is API wrapper which allows to get reports from Google Trends.
+## Installation
 
-All contributions, updates and issues are warmly welcome.
-
-### Installation 
-
-``go get -u github.com/castbox/googletrends``
-
-#### Debug
-
-To see request-response details use `gogtrends.Debug(true)`
-
-#### Usage
-
-**Daily** and **Realtime** trends used as it is. For both methods user interface language are required. For **Realtime** trends category is required param, list of available categories -  **TrendsCategories**.
-
-Please notice that **Realtime** trends are available only for limited list of locations.
-
-
-For **InterestOverTime**, **InterestByLocation** and **Related** - widget and user interface language are required.
-
-To get widget you should call **Explore** methods first, it will return constant list of available widgets, every widget corresponds to methods above.
-
-Widget includes request params and unique token for every method.
-
-Also **Explore** method supports single and multiple items for comparision. Please take a look at **ExploreRequest** input.
-It supports search by multiple categories and locations which you can get as tree structure by **ExploreCategories** and **ExploreLocations**.
-
-Please notice, when you call **Explore** method for keywords comparison, two first widgets would be for all of compared items, next widgets would be for each of individual items.
-
-### Available methods
-
-#### New API Methods
-
-* `DailyNew(ctx context.Context, hl, loc string) ([]*TrendingSearch, error)` - daily trends using the new Google Trends API.
-
-* `DailyTrendingSearchNew(ctx context.Context, hl, loc string) ([]*TrendingSearchDays, error)` - daily trends ordered by days using the new Google Trends API.
-
-#### Legacy API Methods (Deprecated)
-
-* `Daily(ctx context.Context, hl, loc string) ([]*TrendingSearch, error)` - daily trends descending ordered by days and articles corresponding to it. (Deprecated: Use DailyNew instead)
-
-* `DailyTrendingSearch(ctx context.Context, hl, loc string) ([]*TrendingSearchDays, error)` - daily trends descending ordered by days and articles corresponding to it. (Deprecated: Use DailyTrendingSearchNew instead)
-
-* `Realtime(ctx context.Context, hl, loc, cat string) ([]*TrendingStory, error)` - represents realtime trends with included articles and sources. (Deprecated)
-
-* `Search(ctx context.Context, word, hl string) ([]*KeywordTopic, error)` - Words/Topics related (5 results max) with your search.
-
-* `Explore(ctx context.Context, r *ExploreRequest, hl string) ([]*ExploreWidget, error)` - widgets with **tokens**. Every widget is related to specific method (`InterestOverTime`, `InterestByLocation`, `Related`) and contains required **token** and request information.
-
-* `InterestOverTime(ctx context.Context, w *ExploreWidget, hl string) ([]*Timeline, error)` - interest over time, dots for chart. 
-
-* `InterestByLocation(ctx context.Context, w *ExploreWidget, hl string) ([]*GeoMap, error)` - interest by location, list for map with geo codes and interest values.
-
-* `Related(ctx context.Context, w *ExploreWidget, hl string) ([]*RankedKeyword, error)` - related topics or queries, supports two types of widgets.
-
-* `TrendsCategories() map[string]string` - available categories for `Realtime` trends.
-
-* `ExploreCategories(ctx context.Context) (*ExploreCatTree, error)` - tree of categories for explore and comparison. Called once, then returned from cache. (Deprecated)
-
-* `ExploreLocations(ctx context.Context) (*ExploreLocTree, error)` - tree of locations for explore and comparison. Called once, then returned from cache. (Deprecated)
-
-#### Parameters 
-
-* `hl` -  string, user interface language
-
-* `loc` - string, uppercase location (geo) country code, example "US" - United States
-
-* `cat` - string, lowercase category for real time trends, example "all" - all categories
-
-* `exploreReq` - `ExploreRequest` struct, represents search or comparison items.
-
-* `widget` - `ExploreWidget` struct, specific for every method, can be received by `Explore` method.
-
-### Examples
-
-Working detailed examples for all methods and cases can be found in ***example*** folder. Short version below.
-
-#### Using New API Methods (Recommended)
-
-```go
-// Daily trends using new API
-ctx := context.Background()
-dailySearches, err := gogtrends.DailyNew(ctx, "EN", "US")
+```bash
+go get github.com/renatgafarov/googletrends
 ```
 
-```go
-// Daily trending searches by days using new API
-ctx := context.Background()
-trendingSearchDays, err := gogtrends.DailyTrendingSearchNew(ctx, "EN", "US")
-```
+**Requirements:** Go 1.23+
 
-#### Using Legacy API Methods (Deprecated)
+## Quick Start
 
 ```go
-// Daily trends using legacy API
-ctx := context.Background()
-dailySearches, err := gogtrends.Daily(ctx, "EN", "US")
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/renatgafarov/googletrends"
+)
+
+func main() {
+    ctx := context.Background()
+
+    // Get daily trending searches
+    trends, err := googletrends.DailyNew(ctx, "EN", "US")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for _, t := range trends {
+        log.Println(t.Title.Query)
+    }
+}
 ```
+
+## Debug Mode
+
+Enable debug mode to see request/response details:
 
 ```go
-// Get available trends categories and realtime trends
-cats := gogtrends.TrendsCategories()
-realtime, err := gogtrends.Realtime(ctx, "EN", "US", "all")
+googletrends.Debug(true)
 ```
 
+## API Methods
+
+### Daily Trends (Recommended)
 
 ```go
-// Explore available widgets for keywords and get all available stats for it
-explore, err := gogtrends.Explore(ctx, 
-	    &gogtrends.ExploreRequest{
-            ComparisonItems: []*gogtrends.ComparisonItem{
-                {
-                    Keyword: "Go",
-                    Geo:     "US",
-                    Time:    "today 12-m",
-                },
-            },
-            Category: 31, // Programming category
-            Property: "",
-        }, "EN")
+// Get daily trending searches
+trends, err := googletrends.DailyNew(ctx, "EN", "US")
 
-// Interest over time
-overTime, err := gogtrends.InterestOverTime(ctx, explore[0], "EN")
-
-// Interest by location
-byLoc, err := gogtrends.InterestByLocation(ctx, explore[1], "EN")
-
-// Related topics for keyword
-relT, err := gogtrends.Related(ctx, explore[2], "EN")
-
-// Related queries for keyword
-relQ, err := gogtrends.Related(ctx, explore[3], "EN")
-
-// Compare keywords interest
-compare, err := gogtrends.Explore(ctx, 
-	    &gogtrends.ExploreRequest{
-            ComparisonItems: []*gogtrends.ComparisonItem{
-                {
-                    Keyword: "Go",
-                    Geo:     "US",
-                    Time:    "today 12-m",
-                },
-                {
-                    Keyword: "Python",
-                    Geo:     "US",
-                    Time:    "today 12-m",
-                },
-                {
-                    Keyword: "PHP",
-                    Geo:     "US",
-                    Time:    "today 12-m",
-                },                               
-            },
-            Category: 31, // Programming category
-            Property: "",
-        }, "EN")
-
+// Get daily trends grouped by days
+trendsByDays, err := googletrends.DailyTrendingSearchNew(ctx, "EN", "US")
 ```
 
-### Licence
- 
-Package is distributed under [MIT Licence](https://opensource.org/licenses/MIT).
+### Explore & Analytics
+
+```go
+// Search for keyword suggestions
+keywords, err := googletrends.Search(ctx, "Go", "EN")
+
+// Get explore widgets for a keyword
+explore, err := googletrends.Explore(ctx, &googletrends.ExploreRequest{
+    ComparisonItems: []*googletrends.ComparisonItem{
+        {
+            Keyword: "Go",
+            Geo:     "US",
+            Time:    "today 12-m",
+        },
+    },
+    Category: 31, // Programming category
+    Property: "",
+}, "EN")
+
+// Interest over time (for charts)
+timeline, err := googletrends.InterestOverTime(ctx, explore[0], "EN")
+
+// Interest by location (for maps)
+geoData, err := googletrends.InterestByLocation(ctx, explore[1], "EN")
+
+// Related topics
+topics, err := googletrends.Related(ctx, explore[2], "EN")
+
+// Related queries
+queries, err := googletrends.Related(ctx, explore[3], "EN")
+```
+
+### Compare Keywords
+
+```go
+compare, err := googletrends.Explore(ctx, &googletrends.ExploreRequest{
+    ComparisonItems: []*googletrends.ComparisonItem{
+        {Keyword: "Go", Geo: "US", Time: "today 12-m"},
+        {Keyword: "Python", Geo: "US", Time: "today 12-m"},
+        {Keyword: "Rust", Geo: "US", Time: "today 12-m"},
+    },
+    Category: 31,
+    Property: "",
+}, "EN")
+```
+
+### Legacy Methods (Deprecated)
+
+The following methods use the old Google Trends API and may be unstable:
+
+- `Daily()` - use `DailyNew()` instead
+- `DailyTrendingSearch()` - use `DailyTrendingSearchNew()` instead
+- `Realtime()` - realtime trends (limited availability)
+- `ExploreCategories()` - get category tree
+- `ExploreLocations()` - get location tree
+- `TrendsCategories()` - available categories for realtime trends
+
+## Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `hl` | User interface language | `"EN"`, `"RU"`, `"DE"` |
+| `loc` | Location (geo) country code | `"US"`, `"GB"`, `"DE"` |
+| `cat` | Category for realtime trends | `"all"`, `"b"` (business), `"t"` (tech) |
+
+### Time Ranges
+
+Common time range formats for `ComparisonItem.Time`:
+
+- `"now 1-H"` - last hour
+- `"now 4-H"` - last 4 hours
+- `"now 1-d"` - last day
+- `"now 7-d"` - last 7 days
+- `"today 1-m"` - last month
+- `"today 3-m"` - last 3 months
+- `"today 12-m"` - last 12 months
+- `"today 5-y"` - last 5 years
+- `"all"` - all time (2004-present)
+
+## Examples
+
+See the [example](./example) directory for complete working examples.
+
+## License
+
+[MIT License](LICENSE)
