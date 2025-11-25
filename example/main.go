@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/renatgafarov/googletrends"
+	"github.com/RenatGafarov/googletrends"
 )
 
 const (

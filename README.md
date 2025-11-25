@@ -2,14 +2,14 @@
 
 Unofficial Google Trends API for Go.
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/renatgafarov/googletrends.svg)](https://pkg.go.dev/github.com/renatgafarov/googletrends)
-[![Go Report Card](https://goreportcard.com/badge/github.com/renatgafarov/googletrends)](https://goreportcard.com/report/github.com/renatgafarov/googletrends)
+[![Go Reference](https://pkg.go.dev/badge/github.com/RenatGafarov/googletrends.svg)](https://pkg.go.dev/github.com/RenatGafarov/googletrends)
+[![Go Report Card](https://goreportcard.com/badge/github.com/RenatGafarov/googletrends)](https://goreportcard.com/report/github.com/RenatGafarov/googletrends)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Installation
 
 ```bash
-go get github.com/renatgafarov/googletrends
+go get github.com/RenatGafarov/googletrends
 ```
 
 **Requirements:** Go 1.23+
@@ -23,7 +23,7 @@ import (
     "context"
     "log"
 
-    "github.com/renatgafarov/googletrends"
+    "github.com/RenatGafarov/googletrends"
 )
 
 func main() {
