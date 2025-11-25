@@ -1,4 +1,4 @@
-module github.com/renatgafarov/googletrends
+module github.com/RenatGafarov/googletrends
 
 go 1.23
 
