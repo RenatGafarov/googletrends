@@ -132,13 +132,13 @@ const (
 // defaultParams contains the default query parameters used for API requests.
 // These values are copied and can be overridden for specific requests.
 var defaultParams = map[string]string{
-	paramTZ:  "0",      // Timezone offset (UTC)
-	paramCat: "all",    // Category filter (all categories)
-	"fi":     "0",      // First item index
-	"fs":     "0",      // First sort index
-	paramHl:  "EN",     // Host language (English)
-	"ri":     "300",    // Results index
-	"rs":     "20",     // Results size
+	paramTZ:  "0",   // Timezone offset (UTC)
+	paramCat: "all", // Category filter (all categories)
+	"fi":     "0",   // First item index
+	"fs":     "0",   // First sort index
+	paramHl:  "EN",  // Host language (English)
+	"ri":     "300", // Results index
+	"rs":     "20",  // Results size
 }
 
 // TrendingSearchDays represents a collection of trending searches grouped by date.
@@ -205,7 +205,6 @@ type SearchArticle struct {
 	// Snippet is a brief excerpt or summary of the article content.
 	Snippet string `json:"snippet" bson:"snippet"`
 }
-
 
 // ExploreRequest is the input structure for the Explore function.
 // It can contain multiple comparison items (keywords) to discover and compare trends.

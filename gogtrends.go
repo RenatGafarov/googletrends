@@ -53,8 +53,6 @@ func Daily(ctx context.Context, hl, loc string) ([]*TrendingSearch, error) {
 	return DailyNew(ctx, hl, loc)
 }
 
-
-
 // ExploreCategories retrieves the complete tree of available Google Trends categories.
 // The result is cached in the client for subsequent calls.
 //

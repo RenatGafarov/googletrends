@@ -39,8 +39,6 @@ func TestDailyTrending(t *testing.T) {
 	assert.True(t, len(resp[0].Title.Query) > 0)
 }
 
-
-
 func TestExploreCategories(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
@@ -240,7 +238,6 @@ func TestLoadDaily(t *testing.T) {
 		assert.True(t, len(r[0].Title.Query) > 0)
 	}
 }
-
 
 func TestLoadOverTime(t *testing.T) {
 	if testing.Short() {
