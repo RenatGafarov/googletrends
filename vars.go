@@ -88,9 +88,6 @@ const (
 	// paramCat is the query parameter key for category filter.
 	paramCat = "cat"
 
-	// paramGeo is the query parameter key for geographic location filter.
-	paramGeo = "geo"
-
 	// paramReq is the query parameter key for the JSON-encoded request payload.
 	paramReq = "req"
 
