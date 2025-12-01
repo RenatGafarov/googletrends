@@ -27,11 +27,17 @@ const (
 	// headerKeyContentType is the HTTP header key for Content-Type.
 	headerKeyContentType = "Content-Type"
 
+	// headerKeyUserAgent is the HTTP header key for User-Agent.
+	headerKeyUserAgent = "User-Agent"
+
 	// contentTypeJSON is the MIME type for JSON content.
 	contentTypeJSON = "application/json"
 
 	// contentTypeForm is the MIME type for URL-encoded form data.
 	contentTypeForm = "application/x-www-form-urlencoded;charset=UTF-8"
+
+	// defaultUserAgent mimics a real browser to avoid rate limiting.
+	defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
 )
 
 // HTTPDoer is an interface for making HTTP requests.
@@ -203,6 +209,7 @@ func (c *gClient) do(ctx context.Context, u *url.URL) ([]byte, error) {
 	}
 
 	r.Header.Add(headerKeyAccept, contentTypeJSON)
+	r.Header.Add(headerKeyUserAgent, defaultUserAgent)
 
 	if len(c.cookie) != 0 {
 		r.Header.Add(headerKeyCookie, c.cookie)
@@ -261,6 +268,7 @@ func (c *gClient) doPost(ctx context.Context, u *url.URL, payload string) ([]byt
 	}
 
 	r.Header.Add(headerKeyContentType, contentTypeForm)
+	r.Header.Add(headerKeyUserAgent, defaultUserAgent)
 
 	if len(c.cookie) != 0 {
 		r.Header.Add(headerKeyCookie, c.cookie)
